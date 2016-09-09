@@ -20,6 +20,7 @@ namespace BlackBarLabs.Security.SessionServer
             this.context = context;
         }
 
+        public delegate T CreateSessionSuccessDelegateNew<T>(string accessToken, string tokenType, string refreshToken, int expiresIn, string idToken);
         public delegate T CreateSessionSuccessDelegate<T>(Guid authorizationId, string token, string refreshToken);
         public delegate T CreateSessionAlreadyExistsDelegate<T>();
         public async Task<T> CreateAsync<T>(Guid sessionId,
@@ -48,9 +49,9 @@ namespace BlackBarLabs.Security.SessionServer
                     var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
                     return await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId,
                         () =>
-                    {
+                        {
                             var jwtToken = GenerateToken(sessionId, authorizationId, claims);
-                        return onSuccess(authorizationId, jwtToken, refreshToken);
+                            return onSuccess(authorizationId, jwtToken, refreshToken);
                         },
                         () => alreadyExists());
                 },
