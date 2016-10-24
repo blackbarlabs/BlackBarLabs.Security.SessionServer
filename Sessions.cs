@@ -122,10 +122,12 @@ namespace BlackBarLabs.Security.SessionServer
                 throw new SystemException("TokenExpirationInMinutes was not found in the configuration file");
             var tokenExpirationInMinutes = Double.Parse(tokenExpirationInMinutesConfig);
             
-            var jwtToken = Security.Tokens.JwtTools.CreateToken(
-                sessionId.ToString(), DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow + TimeSpan.FromMinutes(tokenExpirationInMinutes),
-                claims,
+            var jwtToken = Security.Tokens.JwtTools.CreateToken(sessionId, authorizationId, 
+                new Uri("http://example.com"), TimeSpan.FromMinutes(tokenExpirationInMinutes),
+                claims.ToDictionary(claim => claim.Type, claim => claim.Value),
+                (token) => token,
+                (setting) => { throw new Exception(setting); },
+                (setting, why) => { throw new Exception(setting + ":" + why); },
                 "AuthServer.issuer", "AuthServer.key");
 
             return jwtToken;
